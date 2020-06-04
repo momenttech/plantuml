@@ -1,4 +1,5 @@
-!include puml-theme-cerulean-outline.puml
+'!include puml-theme-cerulean-outline.puml
+!includeurl https://raw.githubusercontent.com/momenttech/plantuml/master/globals/puml-theme-cerulean-outline.puml
 hide stereotype
 'show <<CONTAINER>> stereotype
 
