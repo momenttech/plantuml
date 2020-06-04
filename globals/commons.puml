@@ -1,0 +1,247 @@
+!include puml-theme-cerulean-outline.puml
+hide stereotype
+'show <<CONTAINER>> stereotype
+
+'skinparam backgroundColor transparent
+'skinparam linetype polyline
+!pragma horizontalLineBetweenDifferentPackageAllowed
+'skinparam linetype ortho
+
+skinparam file<<NOTE>> {
+	BorderThickness 0.5
+	'BackgroundColor $BGCOLOR
+    BackgroundColor LightYellow
+	BorderColor LightSteelBlue
+	FontColor SteelBlue
+    FontSize 10
+    ArrowColor LightSteelBlue
+}
+skinparam arrow<<NOTE>> {
+    Color LightSteelBlue
+}
+
+!procedure $small_notes($name, $label, $arrow="")
+    !if ($arrow == "")
+        !$arrow = ".."
+    !endif
+    !$note_name = $name + "_note"
+    file "$label" as $note_name <<NOTE>>
+    $name $arrow $note_name<<NOTE>>
+!endprocedure
+
+!$TECHN_FONT_SIZE = 10
+!$FONT_SMALL = $TECHN_FONT_SIZE
+!$FONT_VERY_SMALL = $TECHN_FONT_SIZE - 1
+
+' Layout Helpers
+' ##################################
+
+!procedure $Lay_Down(e_from, e_to)
+    e_from -[hidden]D- e_to
+!endprocedure
+!procedure $Lay_Up(e_from, e_to)
+    e_from -[hidden]U- e_to
+!endprocedure
+!procedure $Lay_Right(e_from, e_to)
+    e_from -[hidden]R- e_to
+!endprocedure
+!procedure $Lay_Left(e_from, e_to)
+    e_from -[hidden]L- e_to
+!endprocedure
+
+!startsub Multithreaded
+skinparam node<<MULTITHREADED>>{
+    'FontColor $PRIMARY_DARK
+	'BorderColor $PRIMARY_DARK
+    FontColor $WARNING_LIGHT
+	BorderColor $WARNING_LIGHT
+	BackgroundColor $BGCOLOR
+	BorderThickness 2
+	StereotypeFontColor $PRIMARY
+}
+
+!procedure $Multithreaded($name, $label="", $nb="")
+    !if ($label == "")
+        !$label = $name
+    !endif
+    !if ($nb == "")
+        node "$label\nMultithreaded" as $name <<MULTITHREADED>>
+    !else
+        node "$label\n<i><font color=Teal>$nb</font></i> Threads" as $name <<MULTITHREADED>>
+    !endif
+!endprocedure
+!endsub
+
+!startsub Container
+!$DockerBackground = "#eeeeee"
+skinparam package<<CONTAINER>>{
+	'BackgroundColor #F2FCFE-#eeeeee
+    BackgroundColor $DockerBackground
+  	BorderColor $INFO
+	FontColor $INFO_TEXT
+	BorderThickness 2
+}
+
+!procedure $Container($name, $label="")
+    !if ($label == "")
+        !$label = $name
+    !endif
+    package $label as $name <<CONTAINER>>
+!endfunction
+!endsub
+
+!startsub DockerConfig
+skinparam rectangle<<boundary>> {
+    BackgroundColor $DockerBackground
+    Shadowing false
+    StereotypeFontSize 0
+    FontColor #444444
+    BorderColor #444444
+    BorderStyle dashed
+    BoxPadding 0
+}
+
+skinparam file<<docker_params>> {
+    Shadowing True
+    FontSize $TECHN_FONT_SIZE
+    'FontColor #444444
+    'BorderColor #444444
+}
+
+'## Docker Config
+!procedure $DockerConfig($name)
+    !local $_ref = $name + "_cfg"
+    rectangle "Docker Config" <<boundary>> as $_ref
+!endprocedure
+
+'#### Docker Variables
+!procedure $DockerVariables($name, $mandatory, $optional="")
+    !$var_ref = $name + "_vars"
+    !local $vol_init = "$" + $name + "_vol_init"
+    !local $port_init = "$" + $name + "_port_init"
+    %set_variable_value("$" + $name + "_var_init","initialized")
+
+    !if ($optional == "")
+        file "-- =Variables --\n$mandatory" <<docker_params>> as $var_ref
+    !else
+        file "-- =Variables --\n==Mandatory\n$mandatory\n===Optional\n$optional" <<docker_params>> as $var_ref
+    !endif
+    !if %variable_exists(%get_variable_value("$port_init"))
+        !local $port_ref = $name + "_ports"
+        $Lay_Down($var_ref, $port_ref)
+    !else
+        !if %variable_exists(%get_variable_value("$vol_init"))
+            !local $vol_ref = $name + "_vols"
+            $Lay_Down($var_ref, $vol_ref)
+        !endif
+    !endif
+!endprocedure
+
+'#### Docker Ports
+!procedure $DockerPorts($name, $mandatory, $optional="")
+    !$port_ref = $name + "_ports"
+    !local $vol_init = "$" + $name + "_vol_init"
+    !local $var_init = "$" + $name + "_var_init"
+    %set_variable_value("$" + $name + "_port_init","initialized")
+
+    !if ($optional == "")
+        file "-- =Ports --\n$mandatory" <<docker_params>> as $port_ref
+    !else
+        file "-- =Ports --\n==Mandatory\n$mandatory\n===Optional\n$optional" <<docker_params>> as $port_ref
+    !endif
+    !if %variable_exists(%get_variable_value("$var_init"))
+        !local $var_ref = $name + "_vars"
+        $Lay_Up($port_ref, $var_ref)
+    !if %variable_exists(%get_variable_value("$vol_init"))
+        !local $vol_ref = $name + "_vols"
+        $Lay_Down($port_ref, $vol_ref)
+    !endif
+!endprocedure
+
+'#### Docker Volumes
+!procedure $DockerVolumes($name, $mandatory, $optional="")
+    !local $vol_ref = $name + "_vols"
+    !local $var_init = "$" + $name + "_var_init"
+    !local $port_init = "$" + $name + "_port_init"
+    %set_variable_value("$" + $name + "_vol_init","initialized")
+
+    !if ($optional == "")
+        file "-- =Volumes --\n$mandatory" <<docker_params>> as $vol_ref
+    !else
+        file "-- =Volumes --\n==Mandatory\n$mandatory\n===Optionals\n$optional" <<docker_params>> as $vol_ref
+    !endif
+    
+    !if %variable_exists(%get_variable_value("$port_init"))
+        !local $port_ref = $name + "_ports"
+        $Lay_Up($vol_ref, $port_ref)
+    !else
+        !if %variable_exists(%get_variable_value("$var_init"))
+            !local $var_ref = $name + "_vars"
+            $Lay_Up($vol_ref, $var_ref)
+        !endif
+    !endif
+!endprocedure
+
+'#### Docker Extra
+!procedure $DockerExtra($name, $desc, $mandatory, $optional="")
+    !local $_ref = $name + "_" + $desc
+    !local $var_init = "$" + $name + "_var_init"
+    !local $port_init = "$" + $name + "_port_init"
+    !local $vol_init = "$" + $name + "_vol_init"
+    '%set_variable_value("$" + $name + "_vol_init","initialized")
+
+    !if ($optional == "")
+        file "-- =$desc --\n$mandatory" <<docker_params>> as $_ref
+    !else
+        file "-- =$desc --\n==Mandatory\n$mandatory\n===Optionals\n$optional" <<docker_params>> as $_ref
+    !endif
+    
+    !if %variable_exists(%get_variable_value("$vol_init"))
+        !local $vol_ref = $name + "_vols"
+        $Lay_Up($_ref, $vol_ref)
+    !else
+        !if %variable_exists(%get_variable_value("$port_init"))
+            !local $port_ref = $name + "_ports"
+            $Lay_Up($vol_ref, $port_ref)
+        !else
+            !if %variable_exists(%get_variable_value("$var_init"))
+                !local $var_ref = $name + "_vars"
+                $Lay_Up($vol_ref, $var_ref)
+            !endif
+        !endif
+    !endif
+!endprocedure
+
+
+!endsub
+
+
+' !startsub Config
+' skinparam file<< CONFIG >>{
+' 	FontColor white
+' 	BorderColor $SECONDARY
+' 	BackgroundColor $FGCOLOR-Teal
+'     framePadding 0
+' }
+
+' skinparam component<< HIDE_BORDERS >>{
+' 	BorderColor "transparent"
+'     BackgroundColor "transparent"
+'     shadowing false
+'     Padding 1000
+' }
+
+' !procedure $Config_old($name, $content="")
+' !if ($content == "")
+' file "Config" as $label<< CONFIG >>
+' !else
+' !local $card_name = $name + "cfg"
+' file "Config" as $label<< CONFIG >> {
+'     card $card_name [
+'         $content
+'     ]
+' }
+' !endif
+' !endprocedure
+' !endsub
+
