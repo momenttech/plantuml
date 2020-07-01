@@ -4,6 +4,7 @@ hide stereotype
 'show <<CONTAINER>> stereotype
 
 'skinparam backgroundColor transparent
+skinparam backgroundColor White
 'skinparam linetype polyline
 !pragma horizontalLineBetweenDifferentPackageAllowed
 'skinparam linetype ortho
