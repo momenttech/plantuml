@@ -78,7 +78,14 @@ skinparam node<<MULTITHREADED>>{
 !$DockerBackground = "#eeeeee"
 skinparam package<<CONTAINER>>{
 	'BackgroundColor #F2FCFE-#eeeeee
-    BackgroundColor $DockerBackground
+    	BackgroundColor $DockerBackground
+  	BorderColor $INFO
+	FontColor $INFO_TEXT
+	BorderThickness 2
+}
+skinparam frame<<CONTAINER>>{
+	'BackgroundColor #F2FCFE-#eeeeee
+    	BackgroundColor $DockerBackground
   	BorderColor $INFO
 	FontColor $INFO_TEXT
 	BorderThickness 2
